@@ -1,0 +1,64 @@
+Here's an implementation of the `MLPClassifier` class with a single hidden layer for the multi-layer perceptron (MLP). This solution includes setting up a simple MLP with non-linear functions using PyTorch.
+
+### `models.py`
+```python
+import torch
+import torch.nn as nn
+
+class MLPClassifier(nn.Module):
+    def __init__(self, h: int = 64, w: int = 64, num_classes: int = 6, hidden_dim: int = 128):
+        """
+        An MLP with a single hidden layer
+
+        Args:
+            h: int, height of the input image
+            w: int, width of the input image
+            num_classes: int, number of classes
+            hidden_dim: int, size of the hidden layer
+        """
+        super(MLPClassifier, self).__init__()
+
+        # Compute the input dimension
+        input_dim = h * w * 3  # Assuming input images have 3 channels (e.g., RGB)
+
+        # Define the MLP using nn.Sequential
+        self.mlp = nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),  # Linear layer from input to hidden
+            nn.ReLU(),                         # Non-linear activation
+            nn.Linear(hidden_dim, num_classes) # Linear layer from hidden to output
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x: tensor (b, 3, H, W) image
+
+        Returns:
+            tensor (b, num_classes) logits
+        """
+        # Flatten the input tensor
+        x = x.view(x.size(0), -1)
+
+        # Pass the input through the MLP
+        return self.mlp(x)
+```
+
+### Explanation
+
+1. **Input Dimension**: The input dimension is computed assuming the image has three channels (common in RGB images). The input to the MLP is a flattened vector of size `h * w * 3`.
+
+2. **Model Architecture**:
+
+   - **First Layer**: A `Linear` layer that maps from the input dimension to the hidden dimension, followed by a `ReLU` activation to introduce non-linearity.
+
+   - **Second Layer**: A `Linear` layer that maps from the hidden dimension to the number of classes required for classification.
+
+3. **`nn.Sequential`**:
+   - Used to easily stack layers of a neural network in a sequential manner, which simplifies the forward pass.
+
+4. **Forward Pass**:
+   - The input tensor, `x`, is flattened into a two-dimensional tensor with size `(batch_size, input_dim)`.
+   - The flattened input is then passed through the MLP to obtain logits representing the class scores.
+
+### Note
+This implementation uses PyTorch, making it straightforward to define and train MLPs with non-linear activation functions. Make sure to have PyTorch installed and properly set up in your development environment. The code provided matches the specifications required and is ready for training with your given command structure.
