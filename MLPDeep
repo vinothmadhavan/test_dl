@@ -1,0 +1,82 @@
+To implement the `MLPClassifierDeep` class, we need to build a multi-layer perceptron with at least four layers. We'll use PyTorch to construct this model, and we will utilize `nn.Sequential` to easily chain the layers together.
+
+Here's how you can implement the `MLPClassifierDeep` class:
+
+### `models.py`
+```python
+import torch
+import torch.nn as nn
+
+class MLPClassifierDeep(nn.Module):
+    def __init__(self, h: int = 64, w: int = 64, num_classes: int = 6, hidden_dim: int = 128, num_layers: int = 4):
+        """
+        An MLP with multiple hidden layers
+
+        Args:
+            h: int, height of image
+            w: int, width of image
+            num_classes: int, number of output classes
+            hidden_dim: int, size of hidden layers
+            num_layers: int, number of hidden layers
+        """
+        super(MLPClassifierDeep, self).__init__()
+
+        if num_layers < 2:
+            raise ValueError("num_layers must be at least 2 to have both hidden and output layers.")
+
+        # Input dimension based on image size and number of channels
+        input_dim = h * w * 3  # Assuming RGB images (3 channels)
+
+        # Create a list of nn.Linear layers with ReLU activations in between
+        layers = []
+        
+        # First layer
+        layers.append(nn.Linear(input_dim, hidden_dim))
+        layers.append(nn.ReLU())
+
+        # Hidden layers
+        for _ in range(num_layers - 2):
+            layers.append(nn.Linear(hidden_dim, hidden_dim))
+            layers.append(nn.ReLU())
+
+        # Output layer (no ReLU here, as it connects to the output classes)
+        layers.append(nn.Linear(hidden_dim, num_classes))
+
+        # Use nn.Sequential to define the network structure
+        self.network = nn.Sequential(*layers)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x: tensor (b, 3, H, W) image
+
+        Returns:
+            tensor (b, num_classes) logits
+        """
+        # Flatten the input
+        x = x.view(x.size(0), -1)
+        
+        # Pass through the network
+        return self.network(x)
+```
+
+### Explanation
+
+1. **Input Dimension**: Computed based on the image dimensions and channels, assuming a 3-channel (RGB) input.
+
+2. **Layer Construction**:
+   - The network is constructed using `nn.Sequential`, which allows for easy definition of a layered model.
+   - The network consists of `num_layers` with `hidden_dim` neurons in each hidden layer.
+   - `ReLU` activations are added after each hidden `Linear` layer to introduce non-linearity.
+
+3. **Forward Pass**:
+   - The input tensor `x` is first flattened to ensure compatibility with the fully connected layers.
+   - The flattened input tensor is then passed through the sequential layers using the defined `nn.Sequential` structure.
+
+### Notes
+
+- **Parameterization**: The class allows for tuning the number of layers and hidden dimensions through its constructor parameters, making it flexible for experimentation.
+  
+- **Validation**: Make sure the model has the required depth by setting `num_layers` to 4 or more.
+
+By applying these principles, you're ready to create deep MLPs suitable for multilayer neural network tasks in PyTorch. You can then experiment with different hyperparameters, such as the number of layers and hidden dimensions, to optimize your model.
